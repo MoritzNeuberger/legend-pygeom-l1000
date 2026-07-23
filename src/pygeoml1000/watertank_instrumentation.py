@@ -156,7 +156,7 @@ def place_PMT_front(
     # We have to place the new logical volumes for every single PMT
     g4.PhysicalVolume([0, 0, 0], [0, 0, 0], pmt_vacuum_lv, name + "_vacuum", pmt_window_lv, reg)
     pmt_pv = g4.PhysicalVolume([0, 0, 0], [0, 0, 0], pmt_volumes[2], name, pmt_vacuum_lv, reg)
-    pmt_pv.pygeom_active_detector = RemageDetectorInfo("optical", rawid)
+    pmt_pv.set_pygeom_active_detector(RemageDetectorInfo("optical", rawid))
 
     return g4.PhysicalVolume(rotation, translation, pmt_window_lv, name + "_window", mother_lv, reg)
 
