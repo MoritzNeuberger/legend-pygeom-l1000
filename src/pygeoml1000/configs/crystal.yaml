@@ -25,6 +25,6 @@
     corrections:
       scale: 1.0
   slices:
-    A:
+    X:
       detector_offset_in_mm: 112
       status: valid

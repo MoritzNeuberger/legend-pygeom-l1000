@@ -10,7 +10,7 @@
     manufacturer: DavidHervas
     order: 1
     crystal: "1"
-    slice: A
+    slice: X
     enrichment:
       val: 0.9
       unc: 0.01

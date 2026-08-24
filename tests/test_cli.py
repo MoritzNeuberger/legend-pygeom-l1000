@@ -89,7 +89,7 @@ def test_write_metadata_honours_the_pre_compiled_config(tmp_path):
     config_file = tmp_path / "geom-config.yaml"
     out = tmp_path / "metadata.tar.gz"
     utils.write_dict(
-        {"pre_compiled_config": {"crystal": [{"name": "042", "order": 7, "slices": {"A": {}}}]}},
+        {"pre_compiled_config": {"crystal": [{"name": "042", "order": 7, "slices": {"X": {}}}]}},
         str(config_file),
     )
 

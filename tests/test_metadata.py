@@ -110,7 +110,7 @@ def test_detector_names_match_the_legend_metadata_templates(default_geds):
 def channelmap():
     """A channel map with the minimum variety: two geds, a spms and a pmts channel."""
 
-    def diode(name, string, position, rawid, crystal="1", slice_="A"):
+    def diode(name, string, position, rawid, crystal="1", slice_="X"):
         return {
             "name": name,
             "system": "geds",
@@ -123,8 +123,8 @@ def channelmap():
         }
 
     return {
-        "V00101A": diode("V00101A", 1, 1, 101),
-        "V00102A": diode("V00102A", 1, 2, 102),
+        "V00101X": diode("V00101X", 1, 1, 101),
+        "V00102X": diode("V00102X", 1, 2, 102),
         "S0101T": {
             "name": "S0101T",
             "system": "spms",
@@ -142,7 +142,7 @@ def crystals():
             "name": "1",
             "order": 1,
             "impurity_curve": {"parameters": {"a": 5.0}},
-            "slices": {"A": {"detector_offset_in_mm": 112, "status": "valid"}},
+            "slices": {"X": {"detector_offset_in_mm": 112, "status": "valid"}},
         }
     ]
 
@@ -177,8 +177,8 @@ def test_generated_paths(tree):
         "datasets/statuses/l1000-p01-r%-T%-all-config.yaml",
         "hardware/configuration/channelmaps/validity.yaml",
         "hardware/configuration/channelmaps/l1000-p01-r%-T%-all-config.yaml",
-        "hardware/detectors/germanium/diodes/V00101A.yaml",
-        "hardware/detectors/germanium/diodes/V00102A.yaml",
+        "hardware/detectors/germanium/diodes/V00101X.yaml",
+        "hardware/detectors/germanium/diodes/V00102X.yaml",
         "hardware/detectors/germanium/crystals/V011.yaml",
         "special_metadata.yaml",
     }
@@ -215,8 +215,8 @@ def test_a_key_added_to_a_template_reaches_the_tree(channelmap):
     """
     from pygeoml1000 import metadata
 
-    channelmap["V00101A"]["voltage"] = {"card": {"id": 7}}
-    channel, diode = metadata.split_channel(channelmap["V00101A"])
+    channelmap["V00101X"]["voltage"] = {"card": {"id": 7}}
+    channel, diode = metadata.split_channel(channelmap["V00101X"])
 
     assert channel["voltage"] == {"card": {"id": 7}}
     assert "voltage" not in diode
@@ -240,11 +240,11 @@ def test_statuses_do_not_share_state(channelmap):
     from pygeoml1000 import metadata
 
     statuses = metadata.build_statuses(channelmap)
-    statuses["V00101A"]["usability"] = "off"
-    statuses["V00101A"]["psd"]["status"]["low_aoe"] = "missing"
+    statuses["V00101X"]["usability"] = "off"
+    statuses["V00101X"]["psd"]["status"]["low_aoe"] = "missing"
 
-    assert statuses["V00102A"]["usability"] == "on"
-    assert statuses["V00102A"]["psd"]["status"]["low_aoe"] == "valid"
+    assert statuses["V00102X"]["usability"] == "on"
+    assert statuses["V00102X"]["psd"]["status"]["low_aoe"] == "valid"
     assert metadata.DEFAULT_STATUS["usability"] == "on"
 
 
@@ -254,7 +254,7 @@ def test_crystals_are_grouped_and_carry_a_slice_status(channelmap, crystals):
     built = metadata.build_crystals(channelmap, crystals)
 
     assert set(built) == {"V011"}
-    assert built["V011"]["slices"]["A"]["status"] == "valid"
+    assert built["V011"]["slices"]["X"]["status"] == "valid"
     assert built["V011"]["name"] == "1"
     assert built["V011"]["order"] == 1
 
@@ -262,10 +262,10 @@ def test_crystals_are_grouped_and_carry_a_slice_status(channelmap, crystals):
 def test_crystal_slice_status_is_filled_in_when_the_catalog_omits_it(channelmap, crystals):
     from pygeoml1000 import metadata
 
-    del crystals[0]["slices"]["A"]["status"]
+    del crystals[0]["slices"]["X"]["status"]
     built = metadata.build_crystals(channelmap, crystals)
 
-    assert built["V011"]["slices"]["A"]["status"] == metadata.DEFAULT_SLICE_STATUS
+    assert built["V011"]["slices"]["X"]["status"] == metadata.DEFAULT_SLICE_STATUS
 
 
 def test_generated_file_names_follow_the_run_config(channelmap, crystals):

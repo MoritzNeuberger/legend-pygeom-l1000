@@ -290,7 +290,7 @@ def compile_pre_compiled_config(configs: dict) -> tuple[dict, dict]:
     hpge_names, hpge_rawid = [], []
     for i in range(string_idx.size):
         for j in range(n_units):
-            hpge_names.append(f"V{i + 1:0{string_width}d}{j + 1:0{unit_width}d}A")
+            hpge_names.append(f"V{i + 1:0{string_width}d}{j + 1:0{unit_width}d}X")
             hpge_rawid.append((i + 1) * 10**unit_width + j + 1)
     hpge_names = np.array(hpge_names)
     hpge_rawid = np.array(hpge_rawid)
