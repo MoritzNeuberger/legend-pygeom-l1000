@@ -73,6 +73,19 @@ The detail level also selects between the two fiber models: `detailed` places
 every individual fiber, `simple` places coarse segments instead. The figure uses
 the detailed model.
 
+## Detector array
+
+The combination of all strings and their fiber curtains forms the full detector
+array.
+
+```{image} ./images/array_only.png
+:height: 600px
+:alt: The full array without the reentrance tube.
+```
+
+There are in total 42 strings consisting of 7 clusters of 6 strings in a
+hexagonal arrangement.
+
 ## The reentrance tube
 
 ```{image} ./images/array_reentrance_tube.png
