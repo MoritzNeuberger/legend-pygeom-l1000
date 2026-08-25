@@ -40,31 +40,32 @@ _VIEW_DIRECTION_BELOW = (-1.0, -0.35, -1.25)
 
 _VIEW_ANGLE_DEG = 30.0
 
-STEEL = (0.5, 0.5, 0.5, 0.10)
+STEEL = (0.5, 0.5, 0.5, 0.05)
 TUBE = (0.45, 0.55, 0.75, 0.10)
 WATER = (0, 0, 1, 0.08)
 AIR = (0.85, 0.9, 1, 0.07)
+TYVEK = (0.9, 0.9, 0.9, 0.05)
 
 CRYOSTAT_LVS = (
-    "reentrancetube",
-    "outercryostat",
-    "innercryostat",
-    "vacuumgap",
-    "undergroundlar",
-    "atmosphericlar",
-    "ofhc_cu",
-    "ss_316l",
-    "neutronmoderator",
-    "skirt",
-    "foot",
-    "wls_tpb_inner_argon_lv",
-    "wls_tetratex_inner_argon_lv",
-    "wls_tpb_outer_atmospheric_lv",
-    "wls_tetratex_outer_atmospheric_lv",
+    "reentrance_tube_copper",
+    "cryostat_outer_steel_316L",
+    "cryostat_inner_steel_316L",
+    "cryostat_insulation_vacuum",
+    "liquid_argon_underground",
+    "liquid_argon_atmospheric",
+    "reentrance_tube_layer_copper_ofhc",
+    "reentrance_tube_layer_steel_316L",
+    "neutron_moderator_pmma",
+    "cryostat_skirt_steel_316L",
+    "cryostat_foot_steel_316L",
+    "underground_wlsr_tpb",
+    "underground_wlsr_tetratex",
+    "atmospheric_wlsr_tpb",
+    "atmospheric_wlsr_tetratex",
 )
 HIDE_CRYOSTAT = dict.fromkeys(CRYOSTAT_LVS, HIDE)
-HIDE_STRING_SUPPORT = {"hpge_support_copper_string_support_structure": HIDE}
-HIDE_TRISTAR = {r"hpge_support_copper_tristar_.*": HIDE}
+HIDE_STRING_SUPPORT = {"hpge_string_support_hanger_copper": HIDE}
+HIDE_TRISTAR = {r"hpge_string_support_tristar_copper_.*": HIDE}
 ARRAY_ASSEMBLIES = ["cryostat", "HPGe_dets", "PEN_plates", "front-end_and_insulators"]
 
 # the single-unit views show one detector unit as an excerpt of a longer string: the string top
@@ -79,6 +80,17 @@ DETECTOR_UNIT = {
     "overrides": {**HIDE_CRYOSTAT, **HIDE_STRING_SUPPORT, **HIDE_TRISTAR},
     "window_size": [700, 800],
     "view_direction": _VIEW_DIRECTION_BELOW,
+}
+
+# the window and the vacuum are built once per PMT and carry the channel name as a suffix
+# (``waterinstr_pmt_window_borosilicate_PMT00``), so a pattern has to allow for that suffix; only
+# the cathode is a shared volume with a literal name. The vacuum between window and cathode has no
+# color of its own, which leaves it at the viewer default -- fully opaque -- so it has to be hidden
+# explicitly, otherwise it fills every PMT no matter how transparent the glass around it is.
+PMT_TRANSPARENT = {
+    r"waterinstr_pmt_window_borosilicate_.*": (0.9, 0.8, 0.5, 0.05),
+    r"waterinstr_pmt_interior_vacuum_.*": HIDE,
+    "waterinstr_pmt_cathode": (0.545, 0.271, 0.074, 0.05),
 }
 
 # ----------------------------------------------------------------------------
@@ -101,28 +113,39 @@ IMAGES = {
         "strings": {1},
         "overrides": {
             **HIDE_CRYOSTAT,
-            r"fiber_coating_.*": (0, 1, 0.165, 0.25),
+            r"fiber_coating_tpb_.*": (0, 1, 0.165, 0.25),
         },
         "window_size": [400, 900],
     },
-    "array_reentrance_tube": {
-        "assemblies": ARRAY_ASSEMBLIES,
+    "array_only": {
+        "assemblies": [*ARRAY_ASSEMBLIES, "fiber_curtain"],
         "overrides": {
-            "reentrancetube": TUBE,
-            **{lv: HIDE for lv in CRYOSTAT_LVS if lv != "reentrancetube"},
+            **HIDE_CRYOSTAT,
+            r"fiber_coating_tpb_.*": (0, 1, 0.165, 0.25),
+        },
+        "window_size": [500, 1000],
+        "view_direction": _VIEW_DIRECTION_LEVEL,
+    },
+    "array_reentrance_tube": {
+        "assemblies": [*ARRAY_ASSEMBLIES, "fiber_curtain"],
+        "overrides": {
+            "reentrance_tube_copper": TUBE,
+            **{lv: HIDE for lv in CRYOSTAT_LVS if lv != "reentrance_tube_copper"},
+            r"fiber_coating_tpb_.*": (0, 1, 0.165, 0.25),
         },
         "window_size": [500, 1000],
         "view_direction": _VIEW_DIRECTION_LEVEL,
     },
     "array_cryostat": {
-        "assemblies": ARRAY_ASSEMBLIES,
+        "assemblies": [*ARRAY_ASSEMBLIES, "fiber_curtain", "nm_plastic"],
         "overrides": {
-            "reentrancetube": TUBE,
-            "outercryostat": STEEL,
-            "innercryostat": STEEL,
-            "neutronmoderator": STEEL,
-            "skirt": STEEL,
-            "foot": STEEL,
+            "reentrance_tube_copper": TUBE,
+            "cryostat_outer_steel_316L": STEEL,
+            "cryostat_inner_steel_316L": STEEL,
+            "neutron_moderator_pmma": STEEL,
+            "cryostat_skirt_steel_316L": STEEL,
+            "cryostat_foot_steel_316L": STEEL,
+            r"fiber_coating_tpb_.*": (0, 1, 0.165, 0.25),
         },
         "window_size": [500, 1000],
         "view_direction": _VIEW_DIRECTION_LEVEL,
@@ -140,16 +163,21 @@ IMAGES = {
             "PEN_plates",
             "watertank",
             "watertank_instrumentation",
+            "fiber_curtain",
+            "nm_plastic",
         ],
         "overrides": {
-            "tank": STEEL,
-            "tank_water": WATER,
-            "reentrancetube": TUBE,
-            "outercryostat": STEEL,
-            "innercryostat": STEEL,
-            "neutronmoderator": STEEL,
-            "skirt": STEEL,
-            "foot": STEEL,
+            "watertank_steel_304L": STEEL,
+            "watertank_water": WATER,
+            "reentrance_tube_copper": TUBE,
+            "cryostat_outer_steel_316L": STEEL,
+            "cryostat_inner_steel_316L": STEEL,
+            "neutron_moderator_pmma": STEEL,
+            "cryostat_skirt_steel_316L": STEEL,
+            "cryostat_foot_steel_316L": STEEL,
+            r"fiber_.*": (0, 1, 0.165, 0.125),
+            **PMT_TRANSPARENT,
+            "waterinstr_reflector_tyvek": TYVEK,
         },
         "window_size": [600, 600],
         "view_direction": _VIEW_DIRECTION_LEVEL,
@@ -163,18 +191,23 @@ IMAGES = {
             "PEN_plates",
             "watertank",
             "watertank_instrumentation",
+            "fiber_curtain",
+            "nm_plastic",
         ],
         "overrides": {
             "rock": HIDE,
-            "cavern": AIR,
-            "tank": STEEL,
-            "tank_water": WATER,
-            "reentrancetube": TUBE,
-            "outercryostat": STEEL,
-            "innercryostat": STEEL,
-            "neutronmoderator": STEEL,
-            "skirt": STEEL,
-            "foot": STEEL,
+            "cavern_air": AIR,
+            "watertank_steel_304L": STEEL,
+            "watertank_water": WATER,
+            "reentrance_tube_copper": TUBE,
+            "cryostat_outer_steel_316L": STEEL,
+            "cryostat_inner_steel_316L": STEEL,
+            "neutron_moderator_pmma": STEEL,
+            "cryostat_skirt_steel_316L": STEEL,
+            "cryostat_foot_steel_316L": STEEL,
+            r"fiber_.*": (0, 1, 0.165, 0.125),
+            **PMT_TRANSPARENT,
+            "waterinstr_reflector_tyvek": TYVEK,
         },
         "window_size": [800, 800],
         "view_direction": _VIEW_DIRECTION_LEVEL,
@@ -218,6 +251,14 @@ def _subset_metadata(
         if v.get("system") not in ("geds", "spms") or k in kept_geds | kept_spms
     }
 
+    for string in strings:
+        in_string = sorted(
+            (k for k in kept_geds if channelmap[k]["location"]["string"] == string),
+            key=lambda k: channelmap[k]["location"]["position"],
+        )
+        for slot, name in enumerate(in_string, start=1):
+            channelmap[name]["location"]["position"] = slot
+
     special_metadata["hpges"] = {k: v for k, v in special_metadata["hpges"].items() if k in kept_geds}
     special_metadata["fibers"] = {
         k: v for k, v in special_metadata["fibers"].items() if _string_of(k) in strings
@@ -252,15 +293,24 @@ def _is_visible(lv: g4.LogicalVolume, overrides: dict) -> bool:
 
 
 def _local_bounds(lv: g4.LogicalVolume, cache: dict) -> tuple[np.ndarray, np.ndarray] | None:
-    """Bounding box of a logical volume's own solid, in its local frame."""
-    if lv.name not in cache:
+    """Bounding box of a logical volume's own solid, in its local frame.
+
+    Meshing is by far the expensive part here, so this avoids doing it twice. The cache is keyed
+    on the solid rather than on the volume name because many volumes share one solid -- every PMT
+    carries its own logical volumes over the same two ellipsoids -- and the bounding box depends
+    only on the solid. On top of that, pyg4ometry meshes a solid when the logical volume is built,
+    so the stored mesh is reused instead of meshing a second time.
+    """
+    if lv.solid not in cache:
         try:
-            vertices = np.array(lv.solid.mesh().toVerticesAndPolygons()[0])
-            cache[lv.name] = None if len(vertices) == 0 else (vertices.min(0), vertices.max(0))
+            mesh = getattr(lv, "mesh", None)
+            mesh = lv.solid.mesh() if mesh is None else mesh.localmesh
+            vertices = np.array(mesh.toVerticesAndPolygons()[0])
+            cache[lv.solid] = None if len(vertices) == 0 else (vertices.min(0), vertices.max(0))
         except Exception:  # noqa: BLE001
             log.debug("could not mesh %s for framing", lv.name)
-            cache[lv.name] = None
-    return cache[lv.name]
+            cache[lv.solid] = None
+    return cache[lv.solid]
 
 
 def _visible_bounds(lv: g4.LogicalVolume, overrides: dict) -> tuple[np.ndarray, np.ndarray] | None:
@@ -337,6 +387,8 @@ def export_image(name: str, spec: dict) -> None:
     geom_config = _subset_metadata(spec.get("strings"), spec.get("positions"))
     geom_config["assemblies"] = list(spec["assemblies"])
     geom_config["detail"] = spec.get("detail", config.DEFAULT_DETAIL)
+    # runtime options such as ``hpge_cable_caps`` are plain top-level config keys
+    geom_config.update(spec.get("config", {}))
     registry = core.construct(geom_config)
     log.info("%s: %d physical volumes", name, len(registry.physicalVolumeDict))
 
@@ -356,6 +408,9 @@ def export_image(name: str, spec: dict) -> None:
         "color_overrides": overrides,
         "export_scale": 1,
         "export_and_exit": str(target),
+        "light": {"pos": [-1000, 0, 1000], "shadow": True}
+        if spec.get("view_direction", _VIEW_DIRECTION)[2] > 0
+        else {"pos": [-1000, 0, -1000], "shadow": True},
     }
     if camera is not None:
         scene["default"] = camera
@@ -381,7 +436,7 @@ def main() -> None:
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     if not args.fast:
-        meshconfig.setGlobalMeshSliceAndStack(100)
+        meshconfig.setGlobalMeshSliceAndStack(200)
 
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
 
